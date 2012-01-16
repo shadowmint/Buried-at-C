@@ -1,19 +1,30 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
-PROJECT(TEST_RUNNER)
+# Copyright 2012 Douglas Linder
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+cmake_minimum_required(VERSION 2.8)
+project(HELLO)
 
 # Debug mode?
-SET(DEBUG 1)
-IF(DEBUG)
-  SET(CMAKE_BUILD_TYPE Debug)
-  SET(CMAKE_C_FLAGS "-Wall -pedantic -Wimplicit-function-declaration -Wreturn-type -Wextra -g")
-ENDIF(DEBUG)
+set(DEBUG 1)
+if(DEBUG)
+  set(CMAKE_BUILD_TYPE Debug)
+  set(CMAKE_C_FLAGS "-Wall -pedantic -Wimplicit-function-declaration -Wreturn-type -Wextra -g")
+endif(DEBUG)
 
 # Code type
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
-
-# Includes
-INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/include")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
 
 # test-runner
-FILE(GLOB_RECURSE SOURCES src/*.c)
-ADD_EXECUTABLE(test-runner ${SOURCES})
+file(GLOB_RECURSE SOURCES src/*.c)
+add_executable(hello ${SOURCES})
