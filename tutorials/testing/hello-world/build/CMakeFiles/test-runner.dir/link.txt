@@ -1,0 +1,1 @@
+/usr/bin/gcc  -Wall -pedantic -Wimplicit-function-declaration -Wreturn-type -Wextra -g -std=c99 -g -Wl,-search_paths_first -Wl,-headerpad_max_install_names  -L/opt/local/lib CMakeFiles/test-runner.dir/src/main.c.o  -o test-runner  
