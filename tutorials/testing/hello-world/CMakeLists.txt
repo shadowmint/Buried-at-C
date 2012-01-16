@@ -15,12 +15,17 @@
 cmake_minimum_required(VERSION 2.8)
 project(HELLO)
 
+# Configure
+SET_PROPERTY(CACHE TARGET PROPERTY STRINGS "Debug" "Release")
+
 # Debug mode?
-set(DEBUG 1)
-if(DEBUG)
+if(${TARGET} MATCHES "Debug")
   set(CMAKE_BUILD_TYPE Debug)
   set(CMAKE_C_FLAGS "-Wall -pedantic -Wimplicit-function-declaration -Wreturn-type -Wextra -g")
-endif(DEBUG)
+endif()
+if(${TARGET} MATCHES "Release")
+  set(CMAKE_BUILD_TYPE Release)
+endif()
 
 # Code type
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
