@@ -16,19 +16,24 @@ cmake_minimum_required(VERSION 2.8)
 project(HELLO)
 
 # Configure
+SET(TARGET "Debug" CACHE STRING "Build type chosen at configure step")
 SET_PROPERTY(CACHE TARGET PROPERTY STRINGS "Debug" "Release")
 
 # Debug mode?
 if(${TARGET} MATCHES "Debug")
   set(CMAKE_BUILD_TYPE Debug)
-  set(CMAKE_C_FLAGS "-Wall -pedantic -Wimplicit-function-declaration -Wreturn-type -Wextra -g")
+  if(CMAKE_COMPILER_IS_GNUCXX)
+    set(CMAKE_C_FLAGS "-Wall -pedantic -Wimplicit-function-declaration -Wreturn-type -Wextra -g")
+  endif()
 endif()
 if(${TARGET} MATCHES "Release")
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
 # Code type
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+if(CMAKE_COMPILER_IS_GNUCXX)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+endif()
 
 # test-runner
 file(GLOB_RECURSE SOURCES src/*.c)
