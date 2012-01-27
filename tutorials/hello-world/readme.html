@@ -1,0 +1,119 @@
+<h1>Hello World</h1>
+<p>
+  This is the most base C program; it prints a single line out to the console.
+</p>
+<p>
+  There isn't much to say about this except that it gives you the very basics of
+  C coding:
+<p>
+<ul>
+  <li> Importing files is done via the "#include <name>" directive </li>
+  <li> Functions are in the form [type] [name] ( [args] ) { ... } </li>
+  <li> Programs are started by the 'main' function. </li>
+  <li> Comments are contained in /* ... */ blocks. </li>
+</ul>
+<p>
+  Notice that main() is returning 0; that's a standard for 'no error'. 
+  Typically if an error occurred, the output would be 1, or variety 
+  of non-zero error codes to indicate different failure types.
+</p>
+<p>
+  The printf() function is a part of the C standard library and it
+  generally portable across all platforms. 
+</p>
+<p>
+  There is no special significance to the /** 
+</p>
+<pre>
+/* 
+ * Copyright 2012 Douglas Linder
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include &lt;stdio.h&gt;
+
+int main(int argc, char *argv[]) {
+  printf("Hello World\n");
+  return 0;
+}
+</pre>
+<p>
+Here's a very basic CMakeLists.txt that'll build this:
+</p>
+<pre>
+# Copyright 2012 Douglas Linder
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+cmake_minimum_required(VERSION 2.8)
+project(HELLO)
+
+# Debug mode
+set(CMAKE_BUILD_TYPE Debug)
+if(CMAKE_COMPILER_IS_GNUCXX)
+  set(CMAKE_C_FLAGS "-Wall -pedantic -Wimplicit-function-declaration -Wreturn-type -Wextra -g")
+endif()
+
+# Code type
+if(CMAKE_COMPILER_IS_GNUCXX)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+endif()
+
+# Sources
+file(GLOB_RECURSE SOURCES src/*.c)
+add_executable(hello ${SOURCES})
+</pre>
+<p>
+  It probably seems like overkill to be using CMake to build this program, when on a 
+  unix system you can just as easily do it by going: <b>cc main.c</b>
+</p>
+<p>
+  However, cmake has a couple of perks. For example, if you're using visual studio,
+  simply choose 'visual studio project' as the cmake build type and it'll create a
+  visual studio project to build the application.
+</p>
+<p>
+  Furthermore, the <b>file(GLOB_RECURSE [target] [pattern])</b> action is fantastically 
+  useful for being able to sort your source files into various subdirectories and
+  not have to manage them file-by-file.
+</p>
+<p>
+  If you're using a unix based system, you should be able to build the project simply
+  by running these commands in the hello-world directory:
+</p>
+<pre>
+  mkdir build
+  cd build
+  cmake ..
+  make
+  ./hello
+</pre>
+<div class="lfooter">
+<p>
+<a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/us/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/us/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/us/">Creative Commons Attribution-ShareAlike 3.0 United States License</a>.
+</p>
+<p>
+In simple terms: this post and all the code associated with it are and always will be free for both commercial and non-commercial use by anyone for any purpose. Have fun.
+</p>
+</div>
