@@ -1,0 +1,216 @@
+<h1>Working with python</h1>
+<p>
+  Working with python offers some great benefits; most specifically, unimportant
+  application logic can easily be expressed in python, either for rapid prototyping
+  or just for ease of maintainability.
+</p>
+<p>
+  Interacting between python and c is very easy. First create a shared library,
+  in this case its a simple set of # printing functions given by:
+</p>
+<pre>
+  /** Print # map for each item in lengths, vertically. */
+  int *print_vertical(int *lengths, int count);
+
+  /** Print # map for each item in lengths, horizontally. */
+  int *print_horizontal(int *lengths, int count);
+
+  /** Print a total */
+  void print_total(int *total);
+</pre>
+<p>
+  In this case a simple CMakelists.txt will suffice for generating the
+  shared library:
+</p>
+<pre>
+  cmake_minimum_required(VERSION 2.8)
+  project(PYTEST)
+
+  # Debug mode
+  set(CMAKE_BUILD_TYPE Debug)
+  if(CMAKE_COMPILER_IS_GNUCXX)
+    set(CMAKE_C_FLAGS "-Wall -pedantic -Wimplicit-function-declaration -Wreturn-type -Wextra -g")
+  endif()
+
+  # Code type
+  if(CMAKE_COMPILER_IS_GNUCXX)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+  endif()
+
+  # Sources
+  file(GLOB_RECURSE SOURCES src/*.c)
+  include_directories("${PROJECT_SOURCE_DIR}/include")
+  add_library(pytest SHARED ${SOURCES})
+
+  # Process resulting library
+  get_property(pytest_location TARGET pytest PROPERTY LOCATION)
+  configure_file(pytest.py.in "${PROJECT_SOURCE_DIR}/tests/pytest.py")
+</pre>
+<p>
+  Notice the <b>configure_file</b> directive is used to generate a python 
+  file with the location of the shared library in it:
+</p>
+<pre>
+  def pytest():
+    return "@pytest_location@"
+</pre>
+<p>
+  Incidentally, yes, cmake is very nice in the way it allows this to be done as
+  part of the build process, thank you for asking.
+</p>
+<pre>
+  #include &lt;stdio.h&gt;
+  #include &lt;stdlib.h&gt;
+  #include &lt;printers.h&gt;
+
+  /** Total thing */
+  int __total;
+
+  /** Print # map for each item in lengths, vertically. */
+  int *print_vertical(int *lengths, int count) {
+    
+    __total = 0;
+
+    /* for each item, print that many #'s */
+    for (int i = 0; i < count; ++i) {
+      for (int j = 0; j < lengths[i]; ++j) {
+
+      /* move to the next line. */
+      printf("\n");
+      __total += lengths[i];
+    }
+
+    return &__total;
+  }
+
+  /** Print # map for each item in lengths, horizontally. */
+  int *print_horizontal(int *lengths, int count) {
+
+    __total = 0;
+
+    /* find the maximum height */
+    int max = 0;
+    for (int i = 0; i < count; ++i) {
+      __total += lengths[i];
+      if (lengths[i] > max)
+        max = lengths[i];
+    }
+
+    /* print #'s, line by line. */
+    for (int line = max; line > 0; --line) {
+      for (int i = 0; i < count; ++i) {
+        if (lengths[i] >= line)
+          printf("#");
+        else
+          printf(" ");
+      }
+      printf("\n");
+    }
+
+    return &__total;
+  }
+
+  /** Print the total from a pointer */
+  void print_total (int *total) {
+    printf("Total: %d\n\n", *total);
+  }
+</pre>
+<p>
+  The implementation of the ABI isn't really particularly important, it's 
+  just a few for loops; but notice how the functions return pointers. 
+  This is not required, they could as easily return int or float types,
+  but in this case it is to demonstrate the process of passing a pointer
+  into a python context, and then back out into the c context.
+</p>
+<p>
+  Notice that a new instance of the C program is not run when this occurs;
+  the __total pointer retains its value across the calls to print_vertical()
+  and to print_total()
+</p>
+<p>
+  Invoking the code in python is two step process; first load the shared
+  library using the ctypes.CDLL() call, and then invoke the functions as
+  required.
+</p> 
+<p>
+  In the python code the return and argument types of the c functions has
+  been explicitly specified; this is unrequired in most circumstances, 
+  but good practice to avoid passing incorrectly parameters to functions.
+</p>
+<pre>
+  import os.path
+  from ctypes import *
+  from pytest import pytest
+
+  library = pytest()
+  pytest = CDLL(library)
+
+  # Create a wrapper around our functions:
+  class Printer(object):
+
+    def __init__(self, native):
+      self.native = native
+
+      # int print_vertical(int *lengths, int count); 
+      native.print_vertical.argtypes = [ POINTER(c_int), c_int ]
+      native.print_vertical.restype = POINTER(c_int)
+
+      # int print_vertical(int *lengths, int count);
+      native.print_horizontal.argtypes = [ POINTER(c_int), c_int ]
+      native.print_horizontal.restype = POINTER(c_int)
+
+      # void print_total(int *value)
+      native.print_total.argtypes = [ POINTER(c_int) ]
+
+    def print_vertical(self, lengths):
+      nl = (c_int * len(lengths))()
+      for i in range(0, len(lengths)):
+        nl[i] = lengths[i]
+      rtn = self.native.print_vertical(nl, len(lengths))
+      return rtn
+
+    def print_horizontal(self, lengths):
+      nl = (c_int * len(lengths))()
+      for i in range(0, len(lengths)):
+        nl[i] = lengths[i]
+      rtn = self.native.print_horizontal(nl, len(lengths))
+      return rtn
+
+    def print_total(self, total):
+      """ 
+        There's no reason to pass the whole thing back to a 
+        C function to print; this is function show off passing
+        pointers around. If the return type was an int it 
+        could just be printed by print(total) in python 
+      """
+      self.native.print_total(total)
+
+  lengths = [6, 2, 3, 4, 6]
+
+  p = Printer(pytest)
+
+  print("Vertical:\n")
+  total = p.print_vertical(lengths)
+  p.print_total(total)
+
+  print("Horizontal:\n")
+  total = p.print_horizontal(lengths)
+  p.print_total(total)
+</pre>
+<p>
+  There are various ways to achieve this, but <a href="http://www.swig.org/tutorial.html">SWIG</a> 
+  is an easy way to generate a wrapper around your shared library without having to bind metadata
+  manually.
+</p>
+<p>
+  The full source for this lession is available on 
+  <a href="https://github.com/shadowmint/Buried-at-C/tree/master/content/advanced-topics/01-working-with-python">github</a>.
+</p>
+<div class="lfooter">
+<p>
+<a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/us/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/us/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/us/">Creative Commons Attribution-ShareAlike 3.0 United States License</a>.
+</p>
+<p>
+In simple terms: this post and all the code associated with it are and always will be free for both commercial and non-commercial use by anyone for any purpose. Have fun.
+</p>
+</div>

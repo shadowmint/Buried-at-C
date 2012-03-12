@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-#include <stdio.h>
+/** Print # map for each item in lengths, vertically. */
+int *print_vertical(int *lengths, int count);
 
-int main() {
-  printf("Hello World\n");
-  return 0;
-}
+/** Print # map for each item in lengths, horizontally. */
+int *print_horizontal(int *lengths, int count);
+
+/** Print a total */
+void print_total(int *total);

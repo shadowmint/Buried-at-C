@@ -1,0 +1,2 @@
+def pytest():
+  return "@pytest_location@"

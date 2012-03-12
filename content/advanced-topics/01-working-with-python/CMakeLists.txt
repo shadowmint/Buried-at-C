@@ -13,21 +13,12 @@
 # limitations under the License.
 
 cmake_minimum_required(VERSION 2.8)
-project(HELLO)
+project(PYTEST)
 
-# Configure
-SET(TARGET "Debug" CACHE STRING "Build type chosen at configure step")
-SET_PROPERTY(CACHE TARGET PROPERTY STRINGS "Debug" "Release")
-
-# Debug mode?
-if(${TARGET} MATCHES "Debug")
-  set(CMAKE_BUILD_TYPE Debug)
-  if(CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_C_FLAGS "-Wall -pedantic -Wimplicit-function-declaration -Wreturn-type -Wextra -g")
-  endif()
-endif()
-if(${TARGET} MATCHES "Release")
-  set(CMAKE_BUILD_TYPE Release)
+# Debug mode
+set(CMAKE_BUILD_TYPE Debug)
+if(CMAKE_COMPILER_IS_GNUCXX)
+  set(CMAKE_C_FLAGS "-Wall -pedantic -Wimplicit-function-declaration -Wreturn-type -Wextra -g")
 endif()
 
 # Code type
@@ -35,6 +26,11 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
 endif()
 
-# test-runner
+# Sources
 file(GLOB_RECURSE SOURCES src/*.c)
-add_executable(hello ${SOURCES})
+include_directories("${PROJECT_SOURCE_DIR}/include")
+add_library(pytest SHARED ${SOURCES})
+
+# Process resulting library
+get_property(pytest_location TARGET pytest PROPERTY LOCATION)
+configure_file(pytest.py.in "${PROJECT_SOURCE_DIR}/tests/pytest.py")
